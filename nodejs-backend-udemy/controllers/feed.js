@@ -13,8 +13,11 @@ exports.getPosts = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
+      .populate("creator", '_id name')
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
+
+      console.log(posts)
 
     res.status(200).json({
       message: "Fetched posts successfully.",
@@ -59,6 +62,8 @@ exports.createPost = async (req, res, next) => {
     const user = await User.findById(req.userId);
     user.posts.push(post);
     await user.save();
+
+    console.log(post)
 
     socket.getIo().emit("posts", {
       action: "create",

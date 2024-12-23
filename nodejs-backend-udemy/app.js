@@ -7,6 +7,7 @@ const multer = require("multer");
 
 const feedRoutes = require("./routes/feed");
 const authRoutes = require("./routes/auth");
+const socket = require('./socket');
 
 const app = express();
 
@@ -66,12 +67,7 @@ mongoose
   .then((result) => {
     console.log("Server started on localhost:8080");
     const server = app.listen(8080);
-    const io = require("socket.io")(server, {
-      cors: {
-        origin: 'http://localhost:3000',
-        methods: ['GET', 'POST']
-      }
-    });
+    const io = socket.init(server);
 
     io.on("connection", (socket) => {
       console.log("Client Connected");

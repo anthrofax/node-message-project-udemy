@@ -13,11 +13,9 @@ exports.getPosts = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
-      .populate("creator", '_id name')
+      .populate("creator", "_id name")
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
-
-      console.log(posts)
 
     res.status(200).json({
       message: "Fetched posts successfully.",
@@ -63,7 +61,7 @@ exports.createPost = async (req, res, next) => {
     user.posts.push(post);
     await user.save();
 
-    console.log(post)
+    console.log(post);
 
     socket.getIo().emit("posts", {
       action: "create",
@@ -121,13 +119,14 @@ exports.updatePost = async (req, res, next) => {
     throw error;
   }
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("creator", 'name _id');
     if (!post) {
       const error = new Error("Could not find post.");
       error.statusCode = 404;
       throw error;
     }
-    if (post.creator.toString() !== req.userId) {
+
+    if (post.creator._id.toString() !== req.userId) {
       const error = new Error("Not authorized!");
       error.statusCode = 403;
       throw error;
@@ -139,6 +138,12 @@ exports.updatePost = async (req, res, next) => {
     post.imageUrl = imageUrl;
     post.content = content;
     const result = await post.save();
+
+    socket.getIo().emit("posts", {
+      action: "update",
+      post: result,
+    });
+
     res.status(200).json({ message: "Post updated!", post: result });
   } catch (err) {
     if (!err.statusCode) {

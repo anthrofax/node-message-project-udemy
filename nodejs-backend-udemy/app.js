@@ -4,10 +4,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const { graphqlHTTP } = require("express-graphql");
 
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
-const socket = require("./socket");
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolver");
 
 const app = express();
 
@@ -45,13 +45,18 @@ app.use((req, res, next) => {
 });
 
 app.use(
-  multer({storage: fileStorage, fileFilter: fileFilter }).single("image")
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
 
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -67,11 +72,6 @@ mongoose
   )
   .then((result) => {
     console.log("Server started on localhost:8080");
-    const server = app.listen(8080);
-    const io = socket.init(server);
-
-    io.on("connection", (socket) => {
-      console.log("Client Connected");
-    });
+    app.listen(8080);
   })
   .catch((err) => console.log(err));

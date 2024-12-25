@@ -54,10 +54,11 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
+    console.log(page)
     const graphqlQuery = {
       query: `
         {
-          posts {
+          posts(page: ${page}) {
             posts {
               _id
               title

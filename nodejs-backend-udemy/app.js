@@ -32,8 +32,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
-app.use(bodyParser.json()); // application/json
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -41,13 +39,18 @@ app.use((req, res, next) => {
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+
   next();
 });
+
+// app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
+app.use(bodyParser.json()); // application/json
 
 app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
-
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use(
@@ -60,7 +63,7 @@ app.use(
       if (!err.originalError) return err;
 
       const data = err.originalError.data || "Telah terjadi error.";
-      const status = err.originalError.code || 500; 
+      const status = err.originalError.code || 500;
       const message = err.message;
 
       return { data, status, message };

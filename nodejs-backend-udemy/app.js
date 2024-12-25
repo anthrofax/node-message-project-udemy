@@ -1,5 +1,5 @@
 const path = require("path");
-
+const fs = require("fs");
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -56,6 +56,21 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use(auth);
 
+app.put("/post-image", (req, res) => {
+  if (!req.isAuth) {
+    throw new Error("Not authenticated!");
+  }
+  if (!req.file) {
+    return res.status(200).json({ message: "No file provided!" });
+  }
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+  return res
+    .status(201)
+    .json({ message: "File stored.", filePath: req.file.path });
+});
+
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -65,7 +80,7 @@ app.use(
     customFormatErrorFn(err) {
       if (!err.originalError) return err;
 
-      console.log(err)
+      console.log(err);
 
       const data = err.originalError.data || "Telah terjadi error.";
       const status = err.originalError.code || 500;
@@ -93,3 +108,8 @@ mongoose
     app.listen(8080);
   })
   .catch((err) => console.log(err));
+
+const clearImage = (filePath) => {
+  filePath = path.join(__dirname, "..", filePath);
+  fs.unlink(filePath, (err) => console.log(err));
+};

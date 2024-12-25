@@ -56,6 +56,15 @@ app.use(
     schema: graphqlSchema,
     rootValue: graphqlResolver,
     graphiql: true,
+    formatError(err) {
+      if (!err.originalError) return err;
+
+      const data = err.originalError.data || "Telah terjadi error.";
+      const status = err.originalError.code || 500; 
+      const message = err.message;
+
+      return { data, status, message };
+    },
   })
 );
 

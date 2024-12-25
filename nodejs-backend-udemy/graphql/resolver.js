@@ -27,8 +27,9 @@ module.exports = {
     if (errors.length > 0) {
       const err = new Error(errors[0].message);
       err.data = errors;
+      err.code = 422;
 
-      return err;
+      throw err;
     }
 
     // Memeriksa apakah pengguna dengan email yang sama sudah ada

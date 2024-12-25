@@ -62,8 +62,10 @@ app.use(
     schema: graphqlSchema,
     rootValue: graphqlResolver,
     graphiql: true,
-    formatError(err) {
+    customFormatErrorFn(err) {
       if (!err.originalError) return err;
+
+      console.log(err)
 
       const data = err.originalError.data || "Telah terjadi error.";
       const status = err.originalError.code || 500;
